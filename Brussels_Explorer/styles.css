@@ -1,14 +1,40 @@
-
+/* Algemene layout */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 20px;
     text-align: center;
+    background-color: #f5f5f5;
+    color: #333;
 }
-
+ 
 h1 {
-    color: #020202;
+    color: #111;
+    margin-bottom: 20px;
 }
-
+ 
+/* Bovenste zoek/filter/dataset selector */
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    align-items: center;
+}
+ 
+.controls label {
+    font-weight: bold;
+    margin-right: 5px;
+}
+ 
+select, input[type="text"] {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+ 
+/* Kaarten-container */
 #locations {
     display: flex;
     flex-wrap: wrap;
@@ -16,70 +42,80 @@ h1 {
     justify-content: center;
     margin-top: 20px;
 }
-
+ 
+/* Locatiekaartje */
 .location-card {
-    border: 1px solid #a8a8a8;
-    padding: 15px;
-    width: 250px;
-    border-radius: 8px;
-    background-color: #fff;
+    border: none;
+    padding: 20px;
+    width: 260px;
+    border-radius: 15px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
 }
-
+ 
+.location-card:hover {
+    transform: translateY(-5px);
+}
+ 
 .location-card h2 {
     font-size: 18px;
-    margin-bottom: 10px;
-    color: #007BFF;
+    color: #0056b3;
+    margin-bottom: 8px;
 }
-
+ 
 .location-card p {
     font-size: 14px;
-    color: #555;
+    margin: 6px 0;
 }
-
+ 
+/* Favoriet knop */
 .fav-btn {
-    background-color: #f8f8f8;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    padding: 8px 12px;
+    background-color: #ff4d4d;
+    color: #fff;
+    border: none;
+    border-radius: 25px;
+    padding: 10px 16px;
     font-size: 14px;
+    margin-top: 12px;
     cursor: pointer;
-    margin-top: 10px;
-    transition: all 0.2s ease;
+    transition: background-color 0.3s ease;
 }
-
+ 
 .fav-btn:hover {
-    background-color: #ffecec;
-    border-color: #f55;
-    color: #c00;
+    background-color: #cc0000;
 }
-
+ 
+/* Donkere modus */
 .dark-mode {
-    background-color: #121212;
-    color: #f1f1f1;
+    background-color: #181818;
+    color: #e0e0e0;
 }
-
+.dark-mode h1 {
+color: white;
+}
 .dark-mode .location-card {
-    background-color: #1e1e1e;
-    border-color: #444;
+    background-color: #242424;
+    color: #e0e0e0;
 }
-
-body.dark-mode select,
-body.dark-mode input {
+ 
+.dark-mode .fav-btn {
+    background-color: #cc4444;
+}
+ 
+.dark-mode select,
+.dark-mode input {
     background-color: #333;
     color: #fff;
     border: 1px solid #555;
 }
-
-body.dark-mode .fav-btn {
-    background-color: #333;
-    color: #fff;
-    border-color: #555;
-}
-
+ 
+/* Kaart (Leaflet map) */
 #map {
-    width: 100%;
-    max-width: 800px;
     height: 400px;
-    margin: 0 auto;
-    border-radius: 10px;
+    width: 90%;
+    max-width: 800px;
+    margin: 0 auto 30px;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
 }

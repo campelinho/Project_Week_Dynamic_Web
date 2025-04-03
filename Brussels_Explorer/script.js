@@ -1,47 +1,27 @@
-
 let allRecords = [];
 let currentDataset = "playgrounds";
-
+let map;
+let markers = [];
+ 
 const API_ENDPOINTS = {
     playgrounds: "https://opendata.brussels.be/api/explore/v2.1/catalog/datasets/aires-de-jeux-et-espaces-sportifs-geres-par-la-ville-de-bruxelles/records?limit=50"
 };
-
+ 
 const datasetSelector = document.getElementById("dataset-selector");
 const searchInput = document.getElementById("search");
 const filterSelect = document.getElementById("filter");
-
-document.getElementById("theme-switch").addEventListener("change", () => {
+ 
+// Donker thema toggle
+const themeSwitch = document.getElementById("theme-switch");
+themeSwitch.addEventListener("change", () => {
     document.body.classList.toggle("dark-mode");
 });
-
-// 📍 Leaflet kaart initialiseren
-let map = L.map('map').setView([50.85, 4.35], 12); // Brussel
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-}).addTo(map);
-let markerLayer = L.layerGroup().addTo(map);
-
-function clearMap() {
-    markerLayer.clearLayers();
-}
-
-datasetSelector.addEventListener("change", (e) => {
-    currentDataset = e.target.value;
-    document.getElementById("map").style.display = currentDataset === "playgrounds" ? "block" : "none";
-    if (currentDataset === "favorieten") {
-        displayFavorieten();
-    } else {
-        fetchData(currentDataset);
-    }
-});
-
-searchInput.addEventListener("input", filterAndDisplay);
-filterSelect.addEventListener("change", filterAndDisplay);
-
+ 
+// Favorieten in localStorage
 function getFavorieten() {
     return JSON.parse(localStorage.getItem("favorieten")) || [];
 }
-
+ 
 function toggleFavoriet(id) {
     let favorieten = getFavorieten();
     if (favorieten.includes(id)) {
@@ -52,7 +32,7 @@ function toggleFavoriet(id) {
     localStorage.setItem("favorieten", JSON.stringify(favorieten));
     voegFavorietenOptieToe();
 }
-
+ 
 function voegFavorietenOptieToe() {
     const favorieten = getFavorieten();
     const selector = document.getElementById("dataset-selector");
@@ -64,146 +44,141 @@ function voegFavorietenOptieToe() {
         selector.appendChild(optie);
     }
 }
-
-function updateFilterOptions(records, datasetKey) {
+ 
+// Dataset veranderen
+datasetSelector.addEventListener("change", (e) => {
+    currentDataset = e.target.value;
+    if (currentDataset === "favorieten") {
+        displayFavorieten();
+    } else {
+        fetchData(currentDataset);
+    }
+});
+ 
+searchInput.addEventListener("input", filterAndDisplay);
+filterSelect.addEventListener("change", filterAndDisplay);
+ 
+function updateFilterOptions(records) {
     filterSelect.innerHTML = '<option value="all">Alle</option>';
     const opties = new Set();
-
-    if (datasetKey === "playgrounds") {
-        records.forEach(r => {
-            if (r.horaire && r.horaire !== "?") opties.add(`horaire:${r.horaire}`);
-            if (r.postalcode && r.postalcode !== "?") opties.add(`postcode:${r.postalcode}`);
-        });
-    }
-
+    records.forEach(r => {
+        if (r.horaire && r.horaire !== "?") opties.add(`horaire:${r.horaire}`);
+        if (r.postalcode && r.postalcode !== "?") opties.add(`postcode:${r.postalcode}`);
+    });
     Array.from(opties).sort().forEach(optie => {
-        const optionEl = document.createElement("option");
-        optionEl.value = optie;
-        optionEl.textContent = optie.replace("horaire:", "Openingsuren: ").replace("postcode:", "Postcode: ");
-        filterSelect.appendChild(optionEl);
+        const el = document.createElement("option");
+        el.value = optie;
+        el.textContent = optie.replace("horaire:", "Openingsuren: ").replace("postcode:", "Postcode: ");
+        filterSelect.appendChild(el);
     });
 }
-
+ 
 function filterAndDisplay() {
     if (currentDataset === "favorieten") {
         displayFavorieten();
         return;
     }
-
     const search = searchInput.value.toLowerCase();
     const filter = filterSelect.value.toLowerCase();
-
-    const filtered = allRecords.filter(record => {
-        let matchSearch = true;
+    const filtered = allRecords.filter(r => {
+        const naam = (r.name || "").toLowerCase();
+        const type = (r.type || "").toLowerCase();
+        const horaire = (r.horaire || "").toLowerCase();
+        const postcode = (r.postalcode || "").toLowerCase();
+ 
+        const matchSearch = naam.includes(search) || type.includes(search);
         let matchFilter = true;
-
-        if (currentDataset === "playgrounds") {
-            const type = (record.type || "").toLowerCase();
-            const naam = (record.name || "").toLowerCase();
-            const horaire = (record.horaire || "").toLowerCase();
-            const postcode = (record.postalcode || "").toLowerCase();
-
-            matchSearch = naam.includes(search) || type.includes(search);
-
-            if (filter.startsWith("horaire:")) {
-                const selectedHoraire = filter.replace("horaire:", "");
-                matchFilter = horaire === selectedHoraire;
-            } else if (filter.startsWith("postcode:")) {
-                const selectedPostcode = filter.replace("postcode:", "");
-                matchFilter = postcode === selectedPostcode;
-            } else {
-                matchFilter = filter === "all";
-            }
+ 
+        if (filter.startsWith("horaire:")) {
+            matchFilter = horaire === filter.replace("horaire:", "");
+        } else if (filter.startsWith("postcode:")) {
+            matchFilter = postcode === filter.replace("postcode:", "");
+        } else {
+            matchFilter = filter === "all";
         }
-
+ 
         return matchSearch && matchFilter;
     });
-
-    displayData(filtered, currentDataset);
+ 
+    displayData(filtered);
 }
-
+ 
 function displayFavorieten() {
-    const favorieten = getFavorieten();
-    const favRecords = allRecords.filter(record => favorieten.includes(record.elementid));
-    displayData(favRecords, "playgrounds");
+    const favs = getFavorieten();
+    const favRecords = allRecords.filter(r => favs.includes(r.elementid));
+    displayData(favRecords);
 }
-
-async function fetchData(datasetKey = "playgrounds") {
-    try {
-        const url = API_ENDPOINTS[datasetKey];
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP-fout! Status: ${response.status}`);
-        const data = await response.json();
-        if (data && Array.isArray(data.results)) {
-            allRecords = data.results;
-            updateFilterOptions(allRecords, datasetKey);
-            filterAndDisplay();
-        } else {
-            throw new Error("Geen 'results' veld in de response");
-        }
-    } catch (error) {
-        console.error("Fout bij het ophalen van de data:", error);
-        document.getElementById("locations").innerText = `Fout bij laden van data: ${error.message}`;
-    }
+ 
+function clearMarkers() {
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
 }
-
-function displayData(records, datasetKey) {
+ 
+function displayData(records) {
     const container = document.getElementById("locations");
     container.innerHTML = "";
-
-    if (!records || !Array.isArray(records) || records.length === 0) {
-        container.innerText = "Geen data gevonden.";
-        return;
-    }
-
-    const favorieten = getFavorieten();
-
-    if (datasetKey === "playgrounds") {
-        clearMap();
-    }
-
+    clearMarkers();
+ 
+    const favs = getFavorieten();
+ 
     records.forEach(record => {
+        const id = record.elementid || "?";
+        const naam = record.name || `Speelplein #${id}`;
+        const type = record.type || "Onbekend";
+        const adres = record.address || "Adres onbekend";
+        const uren = record.horaire || "Uur onbekend";
+        const isFav = favs.includes(id);
+ 
         const card = document.createElement("div");
         card.classList.add("location-card");
-
-        if (datasetKey === "playgrounds" || datasetKey === "favorieten") {
-            const id = record.elementid || "Onbekend";
-            const isFavoriet = favorieten.includes(id);
-            const naam = record.name || `Speelplein #${id}`;
-            const type = record.type || "Onbekend";
-            const adres = record.address || "Adres onbekend";
-            const openingUren = record.horaire || "Uur onbekend";
-
-            card.innerHTML = `
-                <h2>${naam}</h2>
-                <p><strong>Type:</strong> ${type}</p>
-                <p><strong>Adres:</strong> ${adres}</p>
-                <p><strong>Openingsuren:</strong> ${openingUren}</p>
-                <button class="fav-btn" data-id="${id}">
-                    ${isFavoriet ? "❌ Verwijder uit favorieten" : "❤️ Voeg toe aan favorieten"}
-                </button>
-            `;
-
-            // Marker toevoegen
-            const coords = record.geo_point_2d;
-            if (coords && coords.lat && coords.lon) {
-                L.marker([coords.lat, coords.lon])
-                    .bindPopup(`<strong>${naam}</strong><br>${adres}`)
-                    .addTo(markerLayer);
-            }
-        }
-
+        card.innerHTML = `
+            <h2>${naam}</h2>
+            <p><strong>Type:</strong> ${type}</p>
+            <p><strong>Adres:</strong> ${adres}</p>
+            <p><strong>Openingsuren:</strong> ${uren}</p>
+            <button class="fav-btn" data-id="${id}">
+                ${isFav ? "❌ Verwijder uit favorieten" : "❤️ Voeg toe aan favorieten"}
+            </button>
+        `;
         container.appendChild(card);
-    });
-
-    container.querySelectorAll(".fav-btn").forEach(btn => {
+ 
+        const btn = card.querySelector(".fav-btn");
         btn.addEventListener("click", () => {
-            const id = btn.getAttribute("data-id");
             toggleFavoriet(id);
             filterAndDisplay();
         });
+ 
+        const coords = record.geo_point_2d;
+        if (coords && coords.lat && coords.lon) {
+            const marker = L.marker([coords.lat, coords.lon]).addTo(map);
+            marker.bindPopup(`<strong>${naam}</strong><br>${adres}`);
+            markers.push(marker);
+        }
     });
 }
-
+ 
+async function fetchData() {
+    try {
+        const url = API_ENDPOINTS[currentDataset];
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Fout bij API");
+        const data = await res.json();
+        allRecords = data.results;
+        updateFilterOptions(allRecords);
+        filterAndDisplay();
+    } catch (err) {
+        console.error(err);
+        document.getElementById("locations").innerText = "Fout bij laden van data";
+    }
+}
+ 
+function initMap() {
+    map = L.map("map").setView([50.85, 4.35], 12);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors"
+    }).addTo(map);
+}
+ 
 voegFavorietenOptieToe();
+initMap();
 fetchData();
