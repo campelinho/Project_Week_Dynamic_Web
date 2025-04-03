@@ -93,7 +93,7 @@ function toggleFavoriet(id) {
 Screenshots
 ![Filter](Screenshot/Filteroptie.png)
 ![Donker/Licht Thema](Screenshot/Donkerthema.png)
-![FAvorieten](Screenshot/Favorieten.png)
+![Favorieten](Screenshot/Favorieten.png)
 
 
 Gebruikte bronnen:
