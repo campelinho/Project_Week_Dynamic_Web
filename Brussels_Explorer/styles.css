@@ -1,3 +1,4 @@
+
 body {
     font-family: Arial, sans-serif;
     margin: 20px;
@@ -33,4 +34,52 @@ h1 {
 .location-card p {
     font-size: 14px;
     color: #555;
+}
+
+.fav-btn {
+    background-color: #f8f8f8;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.2s ease;
+}
+
+.fav-btn:hover {
+    background-color: #ffecec;
+    border-color: #f55;
+    color: #c00;
+}
+
+.dark-mode {
+    background-color: #121212;
+    color: #f1f1f1;
+}
+
+.dark-mode .location-card {
+    background-color: #1e1e1e;
+    border-color: #444;
+}
+
+body.dark-mode select,
+body.dark-mode input {
+    background-color: #333;
+    color: #fff;
+    border: 1px solid #555;
+}
+
+body.dark-mode .fav-btn {
+    background-color: #333;
+    color: #fff;
+    border-color: #555;
+}
+
+#map {
+    width: 100%;
+    max-width: 800px;
+    height: 400px;
+    margin: 0 auto;
+    border-radius: 10px;
 }

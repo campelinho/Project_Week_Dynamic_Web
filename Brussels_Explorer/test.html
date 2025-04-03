@@ -1,22 +1,28 @@
 <!DOCTYPE html>
 <html lang="nl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brussels Explorer</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 </head>
+
 <body>
     <h1>Brussels Explorer</h1>
 
-    <!-- Dropdown voor datasetkeuze -->
+    <!-- Dataset selectie -->
     <label for="dataset-selector">Kies een dataset:</label>
     <select id="dataset-selector">
         <option value="playgrounds">Speelpleinen</option>
-        <option value="gemeentes">Gemeentes</option>
-       
+
     </select>
-    
+
     <!-- Zoekveld -->
     <label for="search">Zoek:</label>
     <input type="text" id="search" placeholder="Typ hier om te zoeken...">
@@ -24,12 +30,17 @@
     <!-- Filter dropdown -->
     <label for="filter">Filter:</label>
     <select id="filter">
-    <option value="all">Alle</option>
+        <option value="all">Alle</option>
     </select>
 
+    <!-- Donkere modus -->
+    <label for="theme-switch">🌗 Donkere modus</label>
+    <input type="checkbox" id="theme-switch">
 
+    <div id="map" style="height: 400px; margin-top: 20px;"></div>
     <div id="locations">Laden...</div>
 
     <script src="script.js"></script>
 </body>
+
 </html>
