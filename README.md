@@ -91,9 +91,9 @@ function toggleFavoriet(id) {
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Screenshots
-![Filter](Screenshots/Filteroptie.png)
-![Donker/Licht Thema](Screenshots/Donkerthema.png)
-![FAvorieten](Screenshots/Favorieten.png)
+![Filter](Screenshot/Filteroptie.png)
+![Donker/Licht Thema](Screenshot/Donkerthema.png)
+![FAvorieten](Screenshot/Favorieten.png)
 
 
 Gebruikte bronnen:
